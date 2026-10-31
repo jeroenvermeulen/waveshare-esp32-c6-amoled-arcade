@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh build",
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": { "base": "$gcc", "fileLocation": "absolute" }
+        },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh build flash",
+            "problemMatcher": { "base": "$gcc", "fileLocation": "absolute" }
+        },
+        {
+            "label": "Flash and monitor",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh build flash monitor",
+            "problemMatcher": { "base": "$gcc", "fileLocation": "absolute" },
+            "presentation": { "focus": true }
+        },
+        {
+            "label": "Monitor",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh monitor",
+            "problemMatcher": [],
+            "presentation": { "focus": true }
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh fullclean",
+            "problemMatcher": []
+        },
+        {
+            "label": "Menuconfig",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/idf.sh menuconfig",
+            "problemMatcher": [],
+            "presentation": { "focus": true }
+        }
+    ]
+}
