@@ -17,11 +17,11 @@ The three buttons on top, seen from the front: **BOOT/−** (left), **PWR** (mid
 | | Touch | Left / right buttons | PWR |
 |---|---|---|---|
 | **Menu** | Tap a game to start; tap the speaker icon to toggle sound | Move the selection | Start the selected game |
-| **Tetris** | Tap: rotate · Drag: move · Drag down: soft drop · Flick down: hard drop · Flick up: rotate back | Move left / right (hold to repeat) | Rotate |
+| **Tetris** | Tap: rotate · Drag: move · Drag down, or hold a finger still: slow drop · Flick down: hard drop · Flick up: rotate back | Move left / right (hold to repeat) | Rotate |
 | **Breakout** | Paddle follows your finger; lift your finger to launch | Move the paddle | Pause |
-| **Crossy Road** | Tap or swipe up: hop forward · Swipe left / right / down: hop that way | Hop left / right | Pause |
+| **Crossy Road** | Tap or swipe up: hop forward · Swipe left / right / down: hop that way | Hop left / right | Hop forward |
 
-In every game, tap the **×** in the top-right corner to pause, then choose resume or quit. In Breakout and Crossy Road, **PWR** pauses too.
+In every game, tap the **×** in the top-right corner to pause, then choose resume or quit. In Breakout, **PWR** pauses too.
 
 Hold **PWR** for about 4 seconds to power off; press it to power on again. Outside a game the screen dims after 1 minute idle, and on battery the board powers off after 5 minutes idle.
 

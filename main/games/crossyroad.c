@@ -159,7 +159,7 @@ static bool crossyroad_update(const input_t *in, float dt)
     }
 
     int dir = -1;
-    if (in->tap || in->swipe == SWIPE_UP) dir = DIR_UP;
+    if (in->tap || in->swipe == SWIPE_UP || (in->pressed & BTN_PWR)) dir = DIR_UP;
     else if (in->swipe == SWIPE_DOWN) dir = DIR_DOWN;
     else if (in->swipe == SWIPE_LEFT) dir = DIR_LEFT;
     else if (in->swipe == SWIPE_RIGHT) dir = DIR_RIGHT;
@@ -353,8 +353,8 @@ static void crossyroad_draw(void)
     gfx_text_shadow(32, 24, buf, 5, WHITE);
 
     if (s_score == 0 && !s_death && s_age < 6.0f) {
-        gfx_text_center(LCD_W / 2 + 2, 152, "TAP TO HOP", 3, BLACK);
-        gfx_text_center(LCD_W / 2, 150, "TAP TO HOP", 3, WHITE);
+        gfx_text_center(LCD_W / 2 + 2, 152, "TAP OR PWR TO HOP", 3, BLACK);
+        gfx_text_center(LCD_W / 2, 150, "TAP OR PWR TO HOP", 3, WHITE);
         gfx_text_center(LCD_W / 2 + 1, 191, "SWIPE OR BUTTONS TO TURN", 2, BLACK);
         gfx_text_center(LCD_W / 2, 190, "SWIPE OR BUTTONS TO TURN", 2, WHITE);
     }
@@ -384,6 +384,7 @@ const game_t game_crossyroad = {
     .name = "CROSSY ROAD",
     .nvs_key = "hi_crossyroad",
     .accent = 0x5CE065,
+    .uses_pwr = true,
     .start = crossyroad_start,
     .update = crossyroad_update,
     .draw = crossyroad_draw,

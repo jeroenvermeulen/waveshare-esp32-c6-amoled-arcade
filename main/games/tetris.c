@@ -17,6 +17,8 @@
 #define CLEAR_TIME  0.3f
 #define DAS_DELAY   0.17f
 #define DAS_REPEAT  0.05f
+#define HOLD_TIME   0.4f    // matches the tap time, so a hold never also rotates
+#define SLOW_STEP   0.05f
 
 #define BG          HEX(0x0A0A1C)
 #define LABEL       HEX(0x8A8AB0)
@@ -46,6 +48,9 @@ static int s_lock_resets;
 static uint32_t s_clear_mask;
 static bool s_over;
 static int s_drag_x, s_drag_y;
+static float s_hold_t, s_slow_t;
+static bool s_hold_moved;
+static bool s_hint;     // start hint shown until the first input
 
 static void cells_of(int kind, int rot, int out[4][2])
 {
@@ -220,6 +225,7 @@ static void tetris_start(void)
     s_over = false;
     s_clear_mask = 0;
     s_age = 0;
+    s_hint = true;
     s_next = draw_from_bag();
     spawn();
 }
@@ -228,6 +234,7 @@ static bool tetris_update(const input_t *in, float dt)
 {
     s_age += dt;
     if (s_over) return false;
+    if (in->touch_start || in->pressed || s_age >= 4.0f) s_hint = false;
     if (s_clear_mask) {
         s_clear_t -= dt;
         if (s_clear_t <= 0) finish_clear();
@@ -252,19 +259,25 @@ static bool tetris_update(const input_t *in, float dt)
         }
     }
 
-    // Dragging moves one cell per DRAG_STEP pixels; dragging down soft-drops
+    // Dragging moves one cell per DRAG_STEP pixels; dragging down soft-drops.
+    // Holding a finger without dragging sideways drops the piece at a steady pace.
     if (in->touch_start) {
         s_drag_x = in->x;
         s_drag_y = in->y;
+        s_hold_t = s_slow_t = 0;
+        s_hold_moved = false;
     }
     if (in->touching) {
+        s_hold_t += dt;
         while (in->x - s_drag_x >= DRAG_STEP) {
             if (try_move(1, 0)) sfx(SFX_MOVE);
             s_drag_x += DRAG_STEP;
+            s_hold_moved = true;
         }
         while (s_drag_x - in->x >= DRAG_STEP) {
             if (try_move(-1, 0)) sfx(SFX_MOVE);
             s_drag_x -= DRAG_STEP;
+            s_hold_moved = true;
         }
         while (in->y - s_drag_y >= DRAG_STEP) {
             if (try_move(0, 1)) {
@@ -274,6 +287,18 @@ static bool tetris_update(const input_t *in, float dt)
             s_drag_y += DRAG_STEP;
         }
         if (in->y < s_drag_y) s_drag_y = in->y;
+        if (s_hold_t >= HOLD_TIME && !s_hold_moved) {
+            s_slow_t += dt;
+            while (s_slow_t >= SLOW_STEP) {
+                s_slow_t -= SLOW_STEP;
+                if (!try_move(0, 1)) {
+                    s_slow_t = 0;
+                    break;
+                }
+                s_score += 1;
+                s_fall_t = 0;
+            }
+        }
     }
 
     if (in->swipe == SWIPE_DOWN) {
@@ -391,11 +416,12 @@ static void tetris_draw(void)
     int oy = 84 + (80 - (maxr - minr + 1) * sz) / 2 - minr * sz;
     draw_piece(s_next, 0, ox, oy, sz);
 
-    if (s_age < 4.0f) {
-        gfx_fill_round_rect(WELL_X + 6, 300, COLS * CELL - 12, 92, 12, HEX(0x15152E));
+    if (s_hint) {
+        gfx_fill_round_rect(WELL_X + 6, 300, COLS * CELL - 12, 118, 12, HEX(0x15152E));
         gfx_text_center(WELL_X + COLS * CELL / 2, 312, "TAP/PWR: ROTATE", 2, WHITE);
         gfx_text_center(WELL_X + COLS * CELL / 2, 338, "DRAG: MOVE", 2, WHITE);
-        gfx_text_center(WELL_X + COLS * CELL / 2, 364, "FLICK DOWN: DROP", 2, WHITE);
+        gfx_text_center(WELL_X + COLS * CELL / 2, 364, "HOLD: SLOW DROP", 2, WHITE);
+        gfx_text_center(WELL_X + COLS * CELL / 2, 390, "FLICK DOWN: DROP", 2, WHITE);
     }
 }
 
