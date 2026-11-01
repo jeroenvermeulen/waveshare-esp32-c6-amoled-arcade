@@ -32,7 +32,7 @@ Verified on the real board:
 
 1. Create `main/games/<name>.c` with a `const game_t game_<name>` (see `game.h`): `start`, `update` (returns `false` once the game is over; the app then shows the game-over screen and keeps calling `draw`), `draw`, `score` and `draw_icon` (an 80×80 menu icon).
 2. Add the file to `main/CMakeLists.txt`, the `extern` to `game.h`, and the game to `s_games` in `main.c`. The menu shows three tiles at 124 px pitch, so a fourth game needs a menu layout change (e.g. smaller tiles or scrolling).
-3. BTN_PWR is reserved for pause and is handled by `main.c`, so games only see touch and BTN_LEFT / BTN_RIGHT.
+3. `main.c` draws a close button (×) in the top-right corner of every game and swallows touches that start there (x ≥ 392, y < 84), so keep that corner free of HUD. BTN_PWR pauses the game unless `uses_pwr` is set, in which case the game gets it (Tetris rotates with it) and only the × pauses.
 4. Keep games original: genre mechanics are fine, but don't reproduce a specific commercial game's name, characters or look.
 
 ## Code style

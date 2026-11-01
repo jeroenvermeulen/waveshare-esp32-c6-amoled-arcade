@@ -1,4 +1,4 @@
-// Brick Bash: paddle-and-ball brick breaker. The paddle follows your finger or
+// Breakout: paddle-and-ball brick breaker. The paddle follows your finger or
 // the side buttons; lifting your finger launches the ball.
 
 #include <math.h>
@@ -46,7 +46,7 @@ static const uint32_t s_row_hex[BROWS] = {
 typedef struct { float x, y, vx, vy; bool on; } ball_t;
 typedef struct { float x, y; int kind; bool on; } cap_t;
 
-static uint8_t s_bricks[BROWS][BCOLS];
+static uint8_t s_breakout[BROWS][BCOLS];
 static ball_t s_balls[MAX_BALLS];
 static cap_t s_caps[MAX_CAPS];
 static float s_pad_x, s_pad_w, s_wide_t, s_slow_t, s_attach_t, s_banner_t, s_attach_off;
@@ -85,7 +85,7 @@ static void build_level(void)
                 if (pattern == 4 && r == 5) hp = STEEL;
                 if (hp != STEEL) s_remaining++;
             }
-            s_bricks[r][c] = hp;
+            s_breakout[r][c] = hp;
         }
     }
 }
@@ -110,7 +110,7 @@ static void launch(void)
     s_attached = false;
 }
 
-static void bricks_start(void)
+static void breakout_start(void)
 {
     s_lives = 3;
     s_level = 1;
@@ -170,7 +170,7 @@ static void apply_cap(int kind)
 
 static void hit_brick(int r, int c)
 {
-    uint8_t *b = &s_bricks[r][c];
+    uint8_t *b = &s_breakout[r][c];
     if (*b == STEEL) {
         sfx(SFX_STEEL);
         return;
@@ -224,7 +224,7 @@ static void step_ball(ball_t *b, float h)
     int r0 = (int)floorf((b->y - BALL_R - BY0) / BPITCH_Y), r1 = (int)floorf((b->y + BALL_R - BY0) / BPITCH_Y);
     for (int r = r0 < 0 ? 0 : r0; r <= r1 && r < BROWS; r++) {
         for (int c = c0 < 0 ? 0 : c0; c <= c1 && c < BCOLS; c++) {
-            if (!s_bricks[r][c]) continue;
+            if (!s_breakout[r][c]) continue;
             float bx = BX0 + c * BPITCH_X, by = BY0 + r * BPITCH_Y;
             float nx = clampf(b->x, bx, bx + BW), ny = clampf(b->y, by, by + BH);
             float dx = b->x - nx, dy = b->y - ny;
@@ -243,7 +243,7 @@ static void step_ball(ball_t *b, float h)
     }
 }
 
-static bool bricks_update(const input_t *in, float dt)
+static bool breakout_update(const input_t *in, float dt)
 {
     if (s_over) return false;
     if (s_banner_t > 0) s_banner_t -= dt;
@@ -332,7 +332,7 @@ static void draw_brick(int x, int y, int w, int h, int row, int hp)
     if (hp >= 3) gfx_fill_rect(x + 10, y + 7, w - 20, h - 14, gfx_mix(base, WHITE, 180));
 }
 
-static void bricks_draw(void)
+static void breakout_draw(void)
 {
     char buf[24];
     gfx_clear(HEX(0x08081A));
@@ -342,7 +342,7 @@ static void bricks_draw(void)
     snprintf(buf, sizeof(buf), "LV %d", s_level);
     gfx_text_center(LCD_W / 2, 22, buf, 2, HEX(0x8A8AB0));
     for (int i = 0; i < s_lives; i++) {
-        gfx_fill_round_rect(424 - i * 32, 24, 26, 8, 4, HEX(0xF5913D));
+        gfx_fill_round_rect(380 - i * 30, 24, 26, 8, 4, HEX(0xF5913D));   // left of the close button
     }
 
     color_t wall = HEX(0x2A2A5A);
@@ -354,7 +354,7 @@ static void bricks_draw(void)
         int y = BY0 + r * BPITCH_Y;
         if (!gfx_visible(y, BH)) continue;
         for (int c = 0; c < BCOLS; c++) {
-            if (s_bricks[r][c]) draw_brick(BX0 + c * BPITCH_X, y, BW, BH, r, s_bricks[r][c]);
+            if (s_breakout[r][c]) draw_brick(BX0 + c * BPITCH_X, y, BW, BH, r, s_breakout[r][c]);
         }
     }
 
@@ -383,12 +383,12 @@ static void bricks_draw(void)
     }
 }
 
-static int bricks_score(void)
+static int breakout_score(void)
 {
     return s_score;
 }
 
-static void bricks_icon(int x, int y, int size)
+static void breakout_icon(int x, int y, int size)
 {
     int bw = size / 4 - 2, bh = size / 8;
     for (int r = 0; r < 3; r++) {
@@ -400,13 +400,13 @@ static void bricks_icon(int x, int y, int size)
     gfx_fill_round_rect(x + size / 4, y + size - 10, size / 2, 9, 4, HEX(0xE8E8F0));
 }
 
-const game_t game_bricks = {
-    .name = "BRICK BASH",
-    .nvs_key = "hi_bricks",
+const game_t game_breakout = {
+    .name = "BREAKOUT",
+    .nvs_key = "hi_breakout",
     .accent = 0xF5913D,
-    .start = bricks_start,
-    .update = bricks_update,
-    .draw = bricks_draw,
-    .score = bricks_score,
-    .draw_icon = bricks_icon,
+    .start = breakout_start,
+    .update = breakout_update,
+    .draw = breakout_draw,
+    .score = breakout_score,
+    .draw_icon = breakout_icon,
 };

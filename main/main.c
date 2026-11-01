@@ -35,12 +35,19 @@
 #define BTN1_X      (PANEL_X + 20)
 #define BTN2_X      (PANEL_X + PANEL_W - 20 - BTN_W)
 
+// In-game close button (top right) that opens the pause screen
+#define CLOSE_CX    436
+#define CLOSE_CY    38
+#define CLOSE_R     19
+#define CLOSE_HIT_X 392
+#define CLOSE_HIT_H 84
+
 #define BG          HEX(0x0B0B1A)
 #define GREY        HEX(0x9A9AB8)
 
 typedef enum { ST_MENU, ST_PLAY, ST_PAUSE, ST_OVER } state_t;
 
-static const game_t *const s_games[] = { &game_blocks, &game_bricks, &game_hopper };
+static const game_t *const s_games[] = { &game_tetris, &game_breakout, &game_crossyroad };
 #define NGAMES (int)(sizeof(s_games) / sizeof(s_games[0]))
 
 static state_t s_state = ST_MENU;
@@ -52,6 +59,7 @@ static float s_state_t;     // seconds since the last state change
 static int s_battery = -1;
 static bool s_charging;
 static float s_menu_t;
+static bool s_close_touch;  // the current touch started on the close button
 
 static struct { int16_t x, y; uint8_t speed, bright; } s_stars[40];
 
@@ -71,6 +79,7 @@ static void start_game(int idx)
     s_sel = idx;
     s_cur = s_games[idx];
     s_cur->start();
+    s_close_touch = false;
     sfx(SFX_START);
     set_state(ST_PLAY);
 }
@@ -115,14 +124,25 @@ static void update(const input_t *in, float dt)
         if (in->pressed & BTN_PWR) start_game(s_sel);
         break;
 
-    case ST_PLAY:
-        if (in->pressed & BTN_PWR) {
+    case ST_PLAY: {
+        // A touch that starts on the close button belongs to it, not to the game
+        input_t gin = *in;
+        bool close = false;
+        if (in->touch_start) s_close_touch = in->x >= CLOSE_HIT_X && in->y < CLOSE_HIT_H;
+        if (s_close_touch) {
+            close = tapped(in, CLOSE_HIT_X, 0, LCD_W - CLOSE_HIT_X, CLOSE_HIT_H);
+            if (!in->touching) s_close_touch = false;
+            gin.touching = gin.touch_start = gin.touch_end = gin.tap = false;
+            gin.swipe = SWIPE_NONE;
+        }
+        if (close || (!s_cur->uses_pwr && (in->pressed & BTN_PWR))) {
             sfx(SFX_PAUSE);
             set_state(ST_PAUSE);
-        } else if (!s_cur->update(in, dt)) {
+        } else if (!s_cur->update(&gin, dt)) {
             end_game();
         }
         break;
+    }
 
     case ST_PAUSE:
         if ((in->pressed & BTN_PWR) || tapped(in, BTN1_X, BTN_Y, BTN_W, BTN_H)) {
@@ -215,6 +235,17 @@ static void draw_button(int x, int y, const char *label, color_t bg)
     gfx_text_center(x + BTN_W / 2, y + (BTN_H - 16) / 2, label, 2, WHITE);
 }
 
+static void draw_close_button(void)
+{
+    if (!gfx_visible(CLOSE_CY - CLOSE_R, 2 * CLOSE_R)) return;
+    gfx_fill_circle(CLOSE_CX, CLOSE_CY, CLOSE_R, HEX(0x8A8AB0));
+    gfx_fill_circle(CLOSE_CX, CLOSE_CY, CLOSE_R - 2, HEX(0x2A2A4C));
+    for (int i = -7; i <= 7; i++) {
+        gfx_fill_rect(CLOSE_CX + i - 1, CLOSE_CY + i - 1, 3, 3, WHITE);
+        gfx_fill_rect(CLOSE_CX - i - 1, CLOSE_CY + i - 1, 3, 3, WHITE);
+    }
+}
+
 static void draw_overlay(void)
 {
     char buf[32];
@@ -248,7 +279,7 @@ static void draw(void)
 {
     switch (s_state) {
     case ST_MENU:  draw_menu(); break;
-    case ST_PLAY:  s_cur->draw(); break;
+    case ST_PLAY:  s_cur->draw(); draw_close_button(); break;
     default:       draw_overlay(); break;
     }
 }

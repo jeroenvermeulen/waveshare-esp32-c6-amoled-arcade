@@ -1,4 +1,4 @@
-// Stackfall: falling-block puzzle. Tap rotates, drag moves, flick down drops.
+// Tetris: falling-block puzzle. Tap rotates, drag moves, flick down drops.
 
 #include <stdio.h>
 #include <string.h>
@@ -210,7 +210,7 @@ static void init_shades(void)
     }
 }
 
-static void blocks_start(void)
+static void tetris_start(void)
 {
     memset(s_board, 0, sizeof(s_board));
     init_shades();
@@ -224,7 +224,7 @@ static void blocks_start(void)
     spawn();
 }
 
-static bool blocks_update(const input_t *in, float dt)
+static bool tetris_update(const input_t *in, float dt)
 {
     s_age += dt;
     if (s_over) return false;
@@ -285,7 +285,7 @@ static bool blocks_update(const input_t *in, float dt)
         return !s_over;
     }
     if (in->swipe == SWIPE_UP) try_rotate(-1);
-    if (in->tap) try_rotate(1);
+    if (in->tap || (in->pressed & BTN_PWR)) try_rotate(1);
 
     if (!grounded()) {
         s_lock_t = 0;
@@ -331,7 +331,7 @@ static void draw_stat(int x, int y, const char *label, int value)
     gfx_text(x, y + 24, buf, gfx_text_width(buf, 3) <= 110 ? 3 : 2, WHITE);
 }
 
-static void blocks_draw(void)
+static void tetris_draw(void)
 {
     gfx_clear(BG);
 
@@ -393,18 +393,18 @@ static void blocks_draw(void)
 
     if (s_age < 4.0f) {
         gfx_fill_round_rect(WELL_X + 6, 300, COLS * CELL - 12, 92, 12, HEX(0x15152E));
-        gfx_text_center(WELL_X + COLS * CELL / 2, 312, "TAP: ROTATE", 2, WHITE);
+        gfx_text_center(WELL_X + COLS * CELL / 2, 312, "TAP/PWR: ROTATE", 2, WHITE);
         gfx_text_center(WELL_X + COLS * CELL / 2, 338, "DRAG: MOVE", 2, WHITE);
         gfx_text_center(WELL_X + COLS * CELL / 2, 364, "FLICK DOWN: DROP", 2, WHITE);
     }
 }
 
-static int blocks_score(void)
+static int tetris_score(void)
 {
     return s_score;
 }
 
-static void blocks_icon(int x, int y, int size)
+static void tetris_icon(int x, int y, int size)
 {
     int c = size / 4;
     static const int8_t layout[][3] = {
@@ -418,13 +418,14 @@ static void blocks_icon(int x, int y, int size)
     }
 }
 
-const game_t game_blocks = {
-    .name = "STACKFALL",
-    .nvs_key = "hi_blocks",
+const game_t game_tetris = {
+    .name = "TETRIS",
+    .nvs_key = "hi_tetris",
     .accent = 0x3DD6F5,
-    .start = blocks_start,
-    .update = blocks_update,
-    .draw = blocks_draw,
-    .score = blocks_score,
-    .draw_icon = blocks_icon,
+    .uses_pwr = true,
+    .start = tetris_start,
+    .update = tetris_update,
+    .draw = tetris_draw,
+    .score = tetris_score,
+    .draw_icon = tetris_icon,
 };

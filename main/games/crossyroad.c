@@ -1,4 +1,4 @@
-// Hopper: guide Blip forward across endless lanes of traffic and rivers.
+// Crossy Road: guide Blip forward across endless lanes of traffic and rivers.
 // Tap to hop forward, swipe or use the side buttons to turn.
 
 #include <math.h>
@@ -95,7 +95,7 @@ static void gen_lane(int r)
     }
 }
 
-static void hopper_start(void)
+static void crossyroad_start(void)
 {
     s_gen_top = 0;
     s_group_type = L_GRASS;
@@ -150,7 +150,7 @@ static int log_under(const lane_t *l, float x)
     return -1;
 }
 
-static bool hopper_update(const input_t *in, float dt)
+static bool crossyroad_update(const input_t *in, float dt)
 {
     s_age += dt;
     if (s_death) {
@@ -337,7 +337,7 @@ static void draw_player(void)
     }
 }
 
-static void hopper_draw(void)
+static void crossyroad_draw(void)
 {
     int bottom = (int)floorf(s_cam);
     for (int r = bottom - 1; r <= bottom + 10; r++) {
@@ -360,12 +360,12 @@ static void hopper_draw(void)
     }
 }
 
-static int hopper_score(void)
+static int crossyroad_score(void)
 {
     return s_score;
 }
 
-static void hopper_icon(int x, int y, int size)
+static void crossyroad_icon(int x, int y, int size)
 {
     int lane_h = size / 3;
     gfx_fill_round_rect(x, y, size, size, 10, HEX(0x52B455));
@@ -380,13 +380,13 @@ static void hopper_icon(int x, int y, int size)
     gfx_fill_circle(cx + 4, cy - 4, 1, BLACK);
 }
 
-const game_t game_hopper = {
-    .name = "HOPPER",
-    .nvs_key = "hi_hopper",
+const game_t game_crossyroad = {
+    .name = "CROSSY ROAD",
+    .nvs_key = "hi_crossyroad",
     .accent = 0x5CE065,
-    .start = hopper_start,
-    .update = hopper_update,
-    .draw = hopper_draw,
-    .score = hopper_score,
-    .draw_icon = hopper_icon,
+    .start = crossyroad_start,
+    .update = crossyroad_update,
+    .draw = crossyroad_draw,
+    .score = crossyroad_score,
+    .draw_icon = crossyroad_icon,
 };

@@ -4,9 +4,9 @@ A small handheld arcade for the [Waveshare ESP32-C6-Touch-AMOLED-2.16](https://d
 
 | Game | Genre | Goal |
 |---|---|---|
-| **Stackfall** | Falling-block puzzle | Fill complete rows to clear them. Speed rises every 10 lines. |
-| **Brick Bash** | Brick breaker | Clear every brick. Power-ups: **W** wide paddle, **M** multi-ball, **S** slow ball, **+** extra life. |
-| **Hopper** | Lane crossing | Help Blip across roads and rivers for as long as you can. The screen keeps creeping forward. |
+| **Tetris** | Falling-block puzzle | Fill complete rows to clear them. Speed rises every 10 lines. |
+| **Breakout** | Brick breaker | Clear every brick. Power-ups: **W** wide paddle, **M** multi-ball, **S** slow ball, **+** extra life. |
+| **Crossy Road** | Lane crossing | Help Blip across roads and rivers for as long as you can. The screen keeps creeping forward. |
 
 High scores and the sound setting are saved in flash.
 
@@ -17,9 +17,11 @@ The three buttons on top, seen from the front: **BOOT/−** (left), **PWR** (mid
 | | Touch | Left / right buttons | PWR |
 |---|---|---|---|
 | **Menu** | Tap a game to start; tap the speaker icon to toggle sound | Move the selection | Start the selected game |
-| **Stackfall** | Tap: rotate · Drag: move · Drag down: soft drop · Flick down: hard drop · Flick up: rotate back | Move left / right (hold to repeat) | Pause |
-| **Brick Bash** | Paddle follows your finger; lift your finger to launch | Move the paddle | Pause |
-| **Hopper** | Tap or swipe up: hop forward · Swipe left / right / down: hop that way | Hop left / right | Pause |
+| **Tetris** | Tap: rotate · Drag: move · Drag down: soft drop · Flick down: hard drop · Flick up: rotate back | Move left / right (hold to repeat) | Rotate |
+| **Breakout** | Paddle follows your finger; lift your finger to launch | Move the paddle | Pause |
+| **Crossy Road** | Tap or swipe up: hop forward · Swipe left / right / down: hop that way | Hop left / right | Pause |
+
+In every game, tap the **×** in the top-right corner to pause, then choose resume or quit. In Breakout and Crossy Road, **PWR** pauses too.
 
 Hold **PWR** for about 4 seconds to power off; press it to power on again. Outside a game the screen dims after 1 minute idle, and on battery the board powers off after 5 minutes idle.
 
@@ -66,7 +68,7 @@ main/
   audio.c/.h      ES8311 setup and a tiny chip-tune sound-effect synth
   store.c/.h      NVS key/value storage
   util.c/.h       random numbers
-  games/          blocks.c (Stackfall), bricks.c (Brick Bash), hopper.c (Hopper)
+  games/          tetris.c (Tetris), breakout.c (Breakout), crossyroad.c (Crossy Road)
 scripts/idf.sh    idf.py wrapper that loads ESP-IDF
 ```
 

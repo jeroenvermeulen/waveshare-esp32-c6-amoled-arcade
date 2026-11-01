@@ -8,14 +8,14 @@ typedef enum {
     SFX_PAUSE,
     SFX_GAME_OVER,
     SFX_LEVEL_UP,
-    // blocks
+    // tetris
     SFX_MOVE,
     SFX_ROTATE,
     SFX_LOCK,
     SFX_DROP,
     SFX_LINE,
     SFX_QUAD,
-    // bricks
+    // breakout
     SFX_WALL,
     SFX_PADDLE,
     SFX_BRICK,
@@ -23,7 +23,7 @@ typedef enum {
     SFX_STEEL,
     SFX_POWERUP,
     SFX_LOSE_LIFE,
-    // hopper
+    // crossyroad
     SFX_HOP,
     SFX_SPLASH,
     SFX_CRASH,
