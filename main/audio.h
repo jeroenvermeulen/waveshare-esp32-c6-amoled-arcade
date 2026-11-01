@@ -27,6 +27,22 @@ typedef enum {
     SFX_HOP,
     SFX_SPLASH,
     SFX_CRASH,
+    // spacewars
+    SFX_SHOOT,
+    SFX_ZAP,
+    SFX_LASER,
+    SFX_BOOM,
+    SFX_BOOM_BIG,
+    SFX_BOMB,
+    // pipsquest
+    SFX_JUMP,
+    SFX_GEM,
+    SFX_STOMP,
+    SFX_BUMP,
+    SFX_BREAK,
+    SFX_SPROUT,
+    SFX_PORTAL,
+    SFX_HURT,
     SFX_COUNT
 } sfx_t;
 

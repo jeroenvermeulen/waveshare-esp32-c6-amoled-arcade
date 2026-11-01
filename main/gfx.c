@@ -160,3 +160,21 @@ color_t gfx_mix(color_t a, color_t b, int t)
     int bl = ((pa & 0x1F) * (256 - t) + (pb & 0x1F) * t) >> 8;
     return __builtin_bswap16((uint16_t)((r << 11) | (g << 5) | bl));
 }
+
+void gfx_sprite(const char *const *rows, int w, int h, int x, int y, int scale, const color_t *pal, int flags)
+{
+    if (!gfx_visible(y, h * scale)) return;
+    for (int r = 0; r < h; r++) {
+        int ry = y + r * scale;
+        if (!gfx_visible(ry, scale)) continue;
+        const char *row = rows[flags & SPRITE_FLIP_Y ? h - 1 - r : r];
+        // Draw runs of equal pixels as one rect
+        for (int c = 0; c < w;) {
+            char ch = row[flags & SPRITE_FLIP_X ? w - 1 - c : c];
+            int n = 1;
+            while (c + n < w && row[flags & SPRITE_FLIP_X ? w - 1 - c - n : c + n] == ch) n++;
+            if (ch != '.') gfx_fill_rect(x + c * scale, ry, n * scale, scale, pal[ch - '0']);
+            c += n;
+        }
+    }
+}

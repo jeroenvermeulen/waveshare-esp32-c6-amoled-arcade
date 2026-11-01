@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include "audio.h"
 #include "board.h"
@@ -21,9 +22,11 @@
 
 #define TILE_X      24
 #define TILE_W      432
-#define TILE_H      110
+#define TILE_H      100
 #define TILE_Y0     96
-#define TILE_STEP   124
+#define TILE_STEP   112
+#define MENU_TOP    (TILE_Y0 - 8)   // tiles scroll under the header above this
+#define MENU_BOTTOM (LCD_H - 12)
 
 #define PANEL_X     60
 #define PANEL_Y     130
@@ -47,7 +50,7 @@
 
 typedef enum { ST_MENU, ST_PLAY, ST_PAUSE, ST_OVER } state_t;
 
-static const game_t *const s_games[] = { &game_tetris, &game_breakout, &game_crossyroad };
+static const game_t *const s_games[] = { &game_tetris, &game_breakout, &game_crossyroad, &game_spacewars, &game_pipsquest };
 #define NGAMES (int)(sizeof(s_games) / sizeof(s_games[0]))
 
 static state_t s_state = ST_MENU;
@@ -60,6 +63,9 @@ static int s_battery = -1;
 static bool s_charging;
 static float s_menu_t;
 static bool s_close_touch;  // the current touch started on the close button
+static float s_scroll, s_scroll_v;  // menu scroll offset (px) and fling speed
+static bool s_follow_sel;   // scroll to the selected tile after a button press
+static int s_drag_y;
 
 static struct { int16_t x, y; uint8_t speed, bright; } s_stars[40];
 
@@ -96,14 +102,51 @@ static void end_game(void)
     set_state(ST_OVER);
 }
 
+static int tile_y(int i)
+{
+    return TILE_Y0 + i * TILE_STEP - (int)s_scroll;
+}
+
+static float max_scroll(void)
+{
+    float m = TILE_Y0 + (NGAMES - 1) * TILE_STEP + TILE_H - MENU_BOTTOM;
+    return m > 0 ? m : 0;
+}
+
+// Drag to scroll, with a fling that slows down; buttons scroll the selection into view
+static void menu_scroll(const input_t *in, float dt)
+{
+    if (in->touch_start) {
+        s_drag_y = in->y;
+        s_scroll_v = 0;
+        s_follow_sel = false;
+    }
+    if (in->touching) {
+        float d = s_drag_y - in->y;
+        s_scroll += d;
+        s_scroll_v = s_scroll_v * 0.5f + (dt > 0 ? d / dt : 0) * 0.5f;
+        s_drag_y = in->y;
+    } else if (s_follow_sel) {
+        float top = TILE_Y0 + s_sel * TILE_STEP;
+        float target = clampf(s_scroll, top + TILE_H - MENU_BOTTOM, top - TILE_Y0);
+        s_scroll += (target - s_scroll) * clampf(dt * 12, 0, 1);
+    } else if (s_scroll_v != 0) {
+        s_scroll += s_scroll_v * dt;
+        s_scroll_v *= 1 - clampf(dt * 4, 0, 1);
+        if (fabsf(s_scroll_v) < 10) s_scroll_v = 0;
+    }
+    s_scroll = clampf(s_scroll, 0, max_scroll());
+}
+
 static void update(const input_t *in, float dt)
 {
     s_state_t += dt;
     switch (s_state) {
     case ST_MENU:
         s_menu_t += dt;
-        for (int i = 0; i < NGAMES; i++) {
-            if (tapped(in, TILE_X, TILE_Y0 + i * TILE_STEP, TILE_W, TILE_H)) {
+        menu_scroll(in, dt);
+        for (int i = 0; i < NGAMES && in->y >= MENU_TOP; i++) {
+            if (tapped(in, TILE_X, tile_y(i), TILE_W, TILE_H)) {
                 start_game(i);
                 return;
             }
@@ -113,12 +156,9 @@ static void update(const input_t *in, float dt)
             store_set("sound", audio_enabled());
             sfx(SFX_SELECT);
         }
-        if ((in->pressed & BTN_LEFT) || in->swipe == SWIPE_UP) {
-            s_sel = (s_sel + NGAMES - 1) % NGAMES;
-            sfx(SFX_SELECT);
-        }
-        if ((in->pressed & BTN_RIGHT) || in->swipe == SWIPE_DOWN) {
-            s_sel = (s_sel + 1) % NGAMES;
+        if (in->pressed & (BTN_LEFT | BTN_RIGHT)) {
+            s_sel = (s_sel + (in->pressed & BTN_LEFT ? NGAMES - 1 : 1)) % NGAMES;
+            s_follow_sel = true;
             sfx(SFX_SELECT);
         }
         if (in->pressed & BTN_PWR) start_game(s_sel);
@@ -194,10 +234,11 @@ static void draw_battery(int x, int y)
     gfx_text(x - gfx_text_width(buf, 2) - 10, y + 5, buf, 2, GREY);
 }
 
-static void draw_stars(void)
+static void draw_stars(int y_max)
 {
     for (int i = 0; i < (int)(sizeof(s_stars) / sizeof(s_stars[0])); i++) {
         int y = (s_stars[i].y + (int)(s_menu_t * s_stars[i].speed)) % LCD_H;
+        if (y >= y_max) continue;
         int b = s_stars[i].bright;
         gfx_fill_rect(s_stars[i].x, y, 2, 2, RGB(b, b, b + 30 > 255 ? 255 : b + 30));
     }
@@ -206,26 +247,41 @@ static void draw_stars(void)
 static void draw_menu(void)
 {
     gfx_clear(BG);
-    draw_stars();
-
-    gfx_text_center(LCD_W / 2 + 3, 31, "ARCADE", 5, HEX(0xB45CF0));
-    gfx_text_center(LCD_W / 2, 28, "ARCADE", 5, WHITE);
-    draw_sound_icon(34, 26);
-    draw_battery(400, 34);
+    draw_stars(LCD_H);
 
     for (int i = 0; i < NGAMES; i++) {
         const game_t *g = s_games[i];
-        int y = TILE_Y0 + i * TILE_STEP;
-        if (!gfx_visible(y, TILE_H)) continue;
+        int y = tile_y(i);
+        if (y + TILE_H <= MENU_TOP || !gfx_visible(y, TILE_H)) continue;
         color_t accent = HEX(g->accent);
         bool sel = i == s_sel;
         if (sel) gfx_fill_round_rect(TILE_X, y, TILE_W, TILE_H, 20, accent);
         gfx_fill_round_rect(TILE_X + 4, y + 4, TILE_W - 8, TILE_H - 8, 16, sel ? HEX(0x232344) : HEX(0x181830));
-        g->draw_icon(TILE_X + 18, y + 15, 80);
-        gfx_text_shadow(TILE_X + 120, y + 24, g->name, 4, sel ? WHITE : HEX(0xD8D8EC));
+        g->draw_icon(TILE_X + 18, y + 10, 80);
+        int scale = gfx_text_width(g->name, 4) <= TILE_W - 140 ? 4 : 3;     // long names drop a size
+        gfx_text_shadow(TILE_X + 120, y + (scale == 4 ? 20 : 24), g->name, scale, sel ? WHITE : HEX(0xD8D8EC));
         char buf[24];
         snprintf(buf, sizeof(buf), "BEST %lu", (unsigned long)s_best[i]);
-        gfx_text(TILE_X + 122, y + 70, buf, 2, sel ? accent : GREY);
+        gfx_text(TILE_X + 122, y + 64, buf, 2, sel ? accent : GREY);
+    }
+
+    float max = max_scroll();
+    if (max > 0) {
+        int track = MENU_BOTTOM - MENU_TOP - 8;
+        int thumb = track * (MENU_BOTTOM - MENU_TOP) / (MENU_BOTTOM - MENU_TOP + (int)max);
+        int ty = MENU_TOP + 4 + (int)((track - thumb) * s_scroll / max);
+        gfx_fill_round_rect(464, MENU_TOP + 4, 6, track, 3, HEX(0x1C1C38));
+        gfx_fill_round_rect(464, ty, 6, thumb, 3, GREY);
+    }
+
+    // The header covers tiles that have scrolled up under it
+    if (gfx_visible(0, MENU_TOP)) {
+        gfx_fill_rect(0, 0, LCD_W, MENU_TOP, BG);
+        draw_stars(MENU_TOP);
+        gfx_text_center(LCD_W / 2 + 3, 31, "ARCADE", 5, HEX(0xB45CF0));
+        gfx_text_center(LCD_W / 2, 28, "ARCADE", 5, WHITE);
+        draw_sound_icon(34, 26);
+        draw_battery(400, 34);
     }
 }
 

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Firmware for a Waveshare ESP32-C6-Touch-AMOLED-2.16: a game menu plus three games. Plain C on ESP-IDF 5.5, no LVGL. See README.md for controls and the user-facing overview.
+Firmware for a Waveshare ESP32-C6-Touch-AMOLED-2.16: a game menu plus five games. Plain C on ESP-IDF 5.5, no LVGL. See README.md for controls and the user-facing overview.
 
 ## Build, flash, test
 
@@ -24,6 +24,7 @@ Verified on the real board:
 
 - `main.c` runs a ~30 fps loop: `input_poll` → `update` (state machine: menu / play / pause / game over) → `display_frame(draw)`.
 - `display_frame` calls `draw()` once per 32-row band (15 times per frame) with `gfx_target` set to that band. Every draw function must therefore render the **whole scene** from game state, without side effects. Never update state inside `draw`. Use `gfx_visible(y, h)` to skip off-band work cheaply.
+- `gfx_sprite` draws pixel-art sprites from string rows (a digit per pixel indexing a palette, `.` transparent), optionally mirrored.
 - Colours are RGB565 stored byte-swapped (`RGB()`, `HEX()` in `gfx.h`). Use those macros, or `gfx_mix`, and never raw RGB565 values.
 - `sfx(id)` is fire-and-forget: it queues an effect for the audio task. To add a sound, add an `sfx_t` entry in `audio.h` and a note list in `s_sfx` in `audio.c`.
 - High scores live in NVS under each game's `nvs_key` (max 15 characters); `store_get` / `store_set` wrap it.
@@ -31,8 +32,8 @@ Verified on the real board:
 ## Adding a game
 
 1. Create `main/games/<name>.c` with a `const game_t game_<name>` (see `game.h`): `start`, `update` (returns `false` once the game is over; the app then shows the game-over screen and keeps calling `draw`), `draw`, `score` and `draw_icon` (an 80×80 menu icon).
-2. Add the file to `main/CMakeLists.txt`, the `extern` to `game.h`, and the game to `s_games` in `main.c`. The menu shows three tiles at 124 px pitch, so a fourth game needs a menu layout change (e.g. smaller tiles or scrolling).
-3. `main.c` draws a close button (×) in the top-right corner of every game and swallows touches that start there (x ≥ 392, y < 84), so keep that corner free of HUD. BTN_PWR pauses the game unless `uses_pwr` is set, in which case the game gets it (Tetris rotates with it, Crossy Road hops forward) and only the × pauses.
+2. Add the file to `main/CMakeLists.txt`, the `extern` to `game.h`, and the game to `s_games` in `main.c`. The menu scrolls, so any number of games fits.
+3. `main.c` draws a close button (×) in the top-right corner of every game and swallows touches that start there (x ≥ 392, y < 84), so keep that corner free of HUD. BTN_PWR pauses the game unless `uses_pwr` is set, in which case the game gets it (Tetris rotates with it, Crossy Road hops forward, Space Shooter fires a bomb, Pip's Quest jumps) and only the × pauses.
 4. Keep games original: genre mechanics are fine, but don't reproduce a specific commercial game's name, characters or look.
 
 ## Code style

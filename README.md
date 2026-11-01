@@ -1,12 +1,14 @@
 # Waveshare ESP32-C6 AMOLED Arcade
 
-A small handheld arcade for the [Waveshare ESP32-C6-Touch-AMOLED-2.16](https://docs.waveshare.com/ESP32-C6-Touch-AMOLED-2.16): a game menu and three original games, played with the touch screen and the three buttons on top.
+A small handheld arcade for the [Waveshare ESP32-C6-Touch-AMOLED-2.16](https://docs.waveshare.com/ESP32-C6-Touch-AMOLED-2.16): a game menu and five games, played with the touch screen and the three buttons on top.
 
 | Game | Genre | Goal |
 |---|---|---|
 | **Tetris** | Falling-block puzzle | Fill complete rows to clear them. Speed rises every 10 lines. |
 | **Breakout** | Brick breaker | Clear every brick. Power-ups: **W** wide paddle, **M** multi-ball, **S** slow ball, **+** extra life. |
 | **Crossy Road** | Lane crossing | Help Blip across roads and rivers for as long as you can. The screen keeps creeping forward. |
+| **Space Shooter** | Vertical shooter | Shoot down waves of UFOs. Saucers drop **P** (more guns) and **B** (an extra nova bomb). |
+| **Pip's Quest** | Platformer | Run and jump to the portal at the end of each level. Stomp slimes and bats, avoid urchins and spikes, and bump boxes from below for gems, a **shield** bubble or a **feather** (double jump). 100 gems give an extra life. |
 
 High scores and the sound setting are saved in flash.
 
@@ -16,10 +18,12 @@ The three buttons on top, seen from the front: **BOOT/−** (left), **PWR** (mid
 
 | | Touch | Left / right buttons | PWR |
 |---|---|---|---|
-| **Menu** | Tap a game to start; tap the speaker icon to toggle sound | Move the selection | Start the selected game |
+| **Menu** | Tap a game to start; drag to scroll; tap the speaker icon to toggle sound | Move the selection | Start the selected game |
 | **Tetris** | Tap: rotate · Drag: move · Drag down, or hold a finger still: slow drop · Flick down: hard drop · Flick up: rotate back | Move left / right (hold to repeat) | Rotate |
 | **Breakout** | Paddle follows your finger; lift your finger to launch | Move the paddle | Pause |
 | **Crossy Road** | Tap or swipe up: hop forward · Swipe left / right / down: hop that way | Hop left / right | Hop forward |
+| **Space Shooter** | Drag anywhere: the ship moves with your finger and fires on its own | Fly left / right | Nova bomb (clears the screen) |
+| **Pip's Quest** | Hold the left / right half: run · Tap or flick up: jump (flick while holding to jump on the run) | Run left / right | Jump (hold for higher) |
 
 In every game, tap the **×** in the top-right corner to pause, then choose resume or quit. In Breakout, **PWR** pauses too.
 
@@ -63,12 +67,12 @@ main/
   main.c          menu, pause and game-over screens, high scores, dimming / auto power-off
   board.c/.h      pin map, I2C bus, AXP2101 power chip
   display.c/.h    QSPI panel setup and banded frame rendering
-  gfx.c/.h        drawing primitives and 5x7 bitmap font (font5x7.h)
+  gfx.c/.h        drawing primitives, pixel-art sprites and 5x7 bitmap font (font5x7.h)
   input.c/.h      buttons, touch, tap / swipe detection
   audio.c/.h      ES8311 setup and a tiny chip-tune sound-effect synth
   store.c/.h      NVS key/value storage
   util.c/.h       random numbers
-  games/          tetris.c (Tetris), breakout.c (Breakout), crossyroad.c (Crossy Road)
+  games/          tetris.c (Tetris), breakout.c (Breakout), crossyroad.c (Crossy Road), spacewars.c (Space Shooter), pipsquest.c (Pip's Quest)
 scripts/idf.sh    idf.py wrapper that loads ESP-IDF
 ```
 

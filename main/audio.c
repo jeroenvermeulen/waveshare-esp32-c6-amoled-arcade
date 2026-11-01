@@ -56,6 +56,21 @@ static const sfx_def_t s_sfx[SFX_COUNT] = {
     [SFX_HOP]       = DEF({360, 720, 40, SQ, 25}),
     [SFX_SPLASH]    = DEF({2400, 300, 300, NOISE, 45}),
     [SFX_CRASH]     = DEF({1500, 150, 320, NOISE, 55}),
+    [SFX_SHOOT]     = DEF({1500, 800, 22, SQ, 10}),
+    [SFX_ZAP]       = DEF({900, 600, 25, TRI, 30}),
+    [SFX_LASER]     = DEF({800, 300, 70, SQ, 16}),
+    [SFX_BOOM]      = DEF({1200, 100, 220, NOISE, 45}),
+    [SFX_BOOM_BIG]  = DEF({1000, 60, 500, NOISE, 55}),
+    [SFX_BOMB]      = DEF({3000, 80, 700, NOISE, 60}, {90, 40, 350, TRI, 70}),
+    [SFX_JUMP]      = DEF({260, 620, 110, SQ, 22}),
+    [SFX_GEM]       = DEF({1320, 1320, 40, SQ, 25}, {1760, 1760, 90, SQ, 25}),
+    [SFX_STOMP]     = DEF({400, 150, 80, TRI, 55}),
+    [SFX_BUMP]      = DEF({160, 120, 50, TRI, 60}),
+    [SFX_BREAK]     = DEF({1200, 200, 150, NOISE, 45}),
+    [SFX_SPROUT]    = DEF({300, 900, 220, TRI, 45}),
+    [SFX_PORTAL]    = DEF({440, 440, 80, TRI, 45}, {554, 554, 80, TRI, 45}, {659, 659, 80, TRI, 45},
+                          {880, 1760, 400, SQ, 30}),
+    [SFX_HURT]      = DEF({600, 200, 200, SQ, 35}),
 };
 
 typedef struct {

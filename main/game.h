@@ -19,3 +19,5 @@ typedef struct {
 extern const game_t game_tetris;
 extern const game_t game_breakout;
 extern const game_t game_crossyroad;
+extern const game_t game_spacewars;
+extern const game_t game_pipsquest;

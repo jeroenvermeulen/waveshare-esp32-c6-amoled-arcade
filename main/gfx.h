@@ -32,3 +32,8 @@ void gfx_text_shadow(int x, int y, const char *s, int scale, color_t c);
 int  gfx_text_width(const char *s, int scale);
 
 color_t gfx_mix(color_t a, color_t b, int t);   // t = 0 (a) .. 256 (b)
+
+// Pixel-art sprite: one string per row, one char per pixel. '.' is transparent and
+// a digit indexes pal. Each pixel is drawn as a scale x scale block.
+enum { SPRITE_FLIP_X = 1, SPRITE_FLIP_Y = 2 };
+void gfx_sprite(const char *const *rows, int w, int h, int x, int y, int scale, const color_t *pal, int flags);
